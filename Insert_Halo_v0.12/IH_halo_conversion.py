@@ -71,6 +71,9 @@ class HaloConversion():
                     x_arcsec = self.SDG.x_arcsec
                     y_arcsec = self.SDG.y_arcsec
 
+                    rs_acc = self.SH.S_rsCDM_acc / self.sh.kpc
+                    rhos_acc = self.SH.S_rhosCDM_acc / self.sh.Msun * self.sh.kpc**3
+
                     m200 = self.SH.S_ma200 / self.sh.Msun
 
                     zlens = self.SDG.IHB.zlens
@@ -84,14 +87,29 @@ class HaloConversion():
 
                     if len(m_z0) != len(x_arcsec):
                         raise IndexError("The selected Sashimi subhalo data should be of the same length as the generated position data in generate_new_halo_classes")
-                    for mass, x, y, rt, rs, rhos, z_infall, sur, m200_acc in zip(m_z0, x_arcsec, y_arcsec, rt_z0, rs_z0, rhos_z0, z_acc, survive, m200):
+                    for mass, x, y, rt, _rs_z0, _rs_acc, _rhos_acc, z_infall, sur, m200_acc in zip(m_z0, x_arcsec, y_arcsec, rt_z0, rs_z0, rs_acc, rhos_acc, z_acc, survive, m200):
                         if sur == 1:
                             rand = np.random.rand()
-                            args = {"r_trunc_kpc": rt*rs, "rs": rs, "rhos": rhos,
+                            # NOTE: pyHalo looks like it defines the evolution of subhalos as 
+                            #     \rho_TNFW(r) = \rho_NFW(r) * T(r)
+                            # where T(r) is the truncation & renormalization function defined by
+                            #     T(r) = (f_t / (1 + (r/r_t)^2)).
+                            # and both f_t and r_t are function of f_bound.
+                            # Here f_bound is defined as the fraction of bound mass (=mass after tidal stripping) to mass before tidal stripping (=virial mass at infall)
+                            # and the probability distribution of f_bound is given by a function of (z_infall, c_sub, c_host).
+                            # 
+                            # In this sense, the definition of r_s and \rho_s below may correspond to the NFW parameters at infall before tidal stripping,
+                            # while the truncation radius r_trunc_kpc may correspond to the tidal radius after tidal stripping.
+                            # 
+                            # In SASHIMI, c_t0 is defined as r_trunc / r_s after tidal stripping so r_trunc is recovered as r_trunc = c_t0 * r_s, not c_t0 * r_s_infall,
+                            # while other parameters such as r_s and \rho_s are defined at infall before tidal stripping.
+                            # 
+                            # Ref: https://arxiv.org/abs/2503.07728
+                            args = {"r_trunc_kpc": rt*_rs_z0, "rs": _rs_acc, "rhos": _rhos_acc,
                                    #"rv": self.cosmology.concentration_calc(mass , zlens) * rs, "z_infall": z_infall,
                                    #"rv": self.cosmology.get_virial_radius(m200_acc, z_infall), "z_infall": z_infall,
                                    #"rv": rt * rs, "z_infall": z_infall,
-                                   "rv": self.compute_Rvir_from_M200(m200_acc, z_infall, rs),
+                                   "rv": self.compute_Rvir_from_M200(m200_acc, z_infall, _rs_acc),
                                    "index": rand, "z_infall": z_infall}
                             self.new_halos.append(TNFWSubHaloSASHIMI_FP(mass, x / arcsec_per_kpc, y / arcsec_per_kpc, None, zlens, True, 
                                                                     lens_cosmo_instance, args, rand, r200 = self.cosmology.get_virial_radius(m200_acc, z_infall)))
