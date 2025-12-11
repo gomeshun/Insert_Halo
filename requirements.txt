@@ -1,0 +1,13 @@
+# Core dependencies
+numpy
+matplotlib
+scipy>=1.11.0  # for scipy.integrate.simpson
+numexpr
+tqdm
+
+# Scientific computing
+astropy
+colossus
+lenstronomy
+mcfit
+pyHalo
