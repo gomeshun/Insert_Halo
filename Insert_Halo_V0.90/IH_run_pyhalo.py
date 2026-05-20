@@ -1,0 +1,131 @@
+from pyHalo.PresetModels.cdm import CDM
+import numpy as np
+from IH_errors import StageException
+from IH_host_halo import Host_Halo
+#from pyHalo.realization_extensions import RealizationExtensions
+from IH_alternative_DM_dist import *
+
+
+
+class PH_run_storage():
+    def __init__(self, geometry_and_massfunction):
+        try:
+            self.GM = geometry_and_massfunction.GM
+            self.IHB = self.GM.IHB
+            self.SIDM_calc = geometry_and_massfunction
+        except AttributeError:
+            self.GM = geometry_and_massfunction
+            self.IHB = self.GM.IHB
+        #self.GM = geometry_and_massfunction
+        #self.IHB = self.GM.IHB
+        self.sh = self.GM.SH.sh_settings
+        #self.cdm = None
+        self.DM_dist = None # For now the replacement for self.cdm which will also be used to store SIDM simulation data when implemented
+        self.ran_pyhalo = False
+        self.host = Host_Halo(self.IHB.zlens, self.IHB.Mhost, self.GM)
+
+    def run_pyhalo(self, n_subhalos = 0, rr_background = False):
+        if not rr_background:
+            if self.IHB.DM_type == "CDM":
+                self.run_pyhalo_CDM(n_subhalos, rr_background)
+            elif self.IHB.DM_type == "SIDM":
+                self.run_pyhalo_SIDM(n_subhalos, rr_background)
+        elif rr_background:
+            if self.IHB.DM_type == "CDM":
+                return self.run_pyhalo_CDM(n_subhalos, rr_background)
+            elif self.IHB.DM_type == "SIDM":
+                return self.run_pyhalo_SIDM(n_subhalos, rr_background)
+
+        
+
+    def run_pyhalo_CDM(self, n_subhalos = 0, rr_background = False):
+        self.IHB.global_status.set_status(f"Running pyHalo-{self.IHB.DM_type}")
+        #print(self.IHB.global_status.status())
+
+        if n_subhalos == None:
+            sigma_sub_corrected = self.IHB.sigma_sub
+        else:
+            sigma_sub_corrected = n_subhalos / (self.GM.lens_plane_area() * self.GM.integrated_subhalo_mass_function()) * self.IHB.sigma_sub
+
+        cdm =  CDM(z_lens = self.IHB.zlens, z_source = self.IHB.zsource, 
+                    sigma_sub = sigma_sub_corrected, 
+                    log_mlow = self.IHB.msub_min, log_mhigh = self.IHB.msub_max, log10_sigma_sub=None,
+                    log10_dNdA = None, concentration_model_subhalos='LUDLOW2016', 
+                    kwargs_concentration_model_subhalos={}, concentration_model_fieldhalos='LUDLOW2016', kwargs_concentration_model_fieldhalos={},
+                    truncation_model_subhalos='TRUNCATION_GALACTICUS', kwargs_truncation_model_subhalos={},
+                    truncation_model_fieldhalos='TRUNCATION_RN', kwargs_truncation_model_fieldhalos={},
+                    infall_redshift_model='HYBRID_INFALL', kwargs_infall_model={},
+                    subhalo_spatial_distribution = self.IHB.spatial_ph,
+                    shmf_log_slope = self.IHB.shmfplindex, cone_opening_angle_arcsec = self.IHB.cone_angle_arcsec,
+                    log_m_host = self.IHB.Mhost,  r_tidal=0.25, LOS_normalization = self.IHB.LOS_normalization, two_halo_contribution=self.IHB.correlated_clustering,
+                    delta_power_law_index=0.0, geometry_type=self.IHB.geometry_shape.upper(), 
+                    kwargs_cosmo = {"H0": self.sh.h*100, "Om0": self.sh.OmegaM, "Ob0": self.sh.OmegaB}, 
+                    host_scaling_factor = self.IHB.host_halo_scale_factor,
+                    redshift_scaling_factor = self.IHB.redshift_scale_factor, two_halo_Lazar_correction=self.IHB.correlated_clustering, 
+                    draw_poisson=False, c_host=self.host.properties["c200"],
+                    add_globular_clusters=False, kwargs_globular_clusters=None, mass_threshold_sis=5*10**10,
+                    galaxy_model='GNFW', halo_mass_profile='TNFW')
+
+
+        #self.cdm = cdm
+        if not rr_background:
+            self.DM_dist = cdm
+            self.ran_pyhalo = True
+        elif rr_background:
+            return cdm
+        self.IHB.global_status.set_status("idle")
+
+    def run_pyhalo_SIDM(self, n_subhalos = 0, rr_background = False):
+        self.IHB.global_status.set_status(f"Running pyHalo-{self.IHB.DM_type}")
+
+        if n_subhalos == None:
+            sigma_sub_corrected = self.IHB.sigma_sub
+        else:
+            sigma_sub_corrected = n_subhalos / (self.GM.lens_plane_area() * self.GM.integrated_subhalo_mass_function()) * self.IHB.sigma_sub
+        
+        cdm =  CDM(z_lens = self.IHB.zlens, z_source = self.IHB.zsource, 
+            sigma_sub = sigma_sub_corrected, 
+            log_mlow = self.IHB.msub_min, log_mhigh = self.IHB.msub_max, log10_sigma_sub=None,
+            log10_dNdA = None, concentration_model_subhalos='LUDLOW2016', 
+            kwargs_concentration_model_subhalos={}, concentration_model_fieldhalos='LUDLOW2016', kwargs_concentration_model_fieldhalos={},
+            truncation_model_subhalos='TRUNCATION_GALACTICUS', kwargs_truncation_model_subhalos={},
+            truncation_model_fieldhalos='TRUNCATION_RN', kwargs_truncation_model_fieldhalos={},
+            infall_redshift_model='HYBRID_INFALL', kwargs_infall_model={},
+            subhalo_spatial_distribution = self.IHB.spatial_ph,
+            shmf_log_slope = self.IHB.shmfplindex, cone_opening_angle_arcsec = self.IHB.cone_angle_arcsec,
+            log_m_host = self.IHB.Mhost,  r_tidal=0.25, LOS_normalization = self.IHB.LOS_normalization, two_halo_contribution=self.IHB.correlated_clustering,
+            delta_power_law_index=0.0, geometry_type=self.IHB.geometry_shape.upper(), 
+            kwargs_cosmo = {"H0": self.sh.h*100, "Om0": self.sh.OmegaM, "Ob0": self.sh.OmegaB}, 
+            host_scaling_factor = self.IHB.host_halo_scale_factor,
+            redshift_scaling_factor = self.IHB.redshift_scale_factor, two_halo_Lazar_correction=self.IHB.correlated_clustering, 
+            draw_poisson=False, c_host=self.host.properties["c200"],
+            add_globular_clusters=False, kwargs_globular_clusters=None, mass_threshold_sis=5*10**10,
+            galaxy_model='GNFW', halo_mass_profile='TNFW')
+
+        #extension = RealizationExtensions(cdm)
+
+        #index_collapsed = extension.core_collapse_by_mass(mass_ranges_subhalos, mass_ranges_field_halos,
+        #    probabilities_subhalos, probabilities_field_halos)
+        #sidm = extension.add_core_collapsed_halos(index_collapsed, collapsed_halo_profile, **kwargs_halo_profile)
+
+        if not rr_background:
+            self.DM_dist = cdm
+            self.ran_pyhalo = True
+        elif rr_background:
+            return sidm
+        self.IHB.global_status.set_status("idle")
+
+
+    def run_pyhalo_alternative(self):
+        self.SIDM_dist = Insert_Halo_SIDM_Distribution(self.IHB)
+        
+
+
+
+
+
+
+
+
+
+    
