@@ -11,7 +11,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "numpy==2.5.1",
     "matplotlib==3.11.1",
-    "scipy==1.18.0",
+    "scipy==1.17.1",
     "numexpr==2.14.2",
     "tqdm==4.70.0",
     "astropy==8.0.1",
