@@ -1,4 +1,5 @@
 import numpy as np
+from IH_host_halo import Host_Halo
 
 class constants_and_conversion:
     """
@@ -39,6 +40,7 @@ class constants_and_conversion:
         
         #https://asd.gsfc.nasa.gov/Stephen.Merkowitz/G/Big_G.html
         self.G = 6.674215e-11 * self.m ** 3 / self.kg / self.s **2
+        self.c = 2.99792458e8 * self.m / self.s
 
 
 
@@ -51,8 +53,13 @@ class global_parameters(constants_and_conversion):
     """
     def __init__(self, zlens = 0.5, zsource = 2.0, DM_type = "CDM", sigma_0 = 20, vel_scale = 25, Mhost = 13, geometry_shape = "DOUBLE_CONE",
                 shmfplindex = -1.9, msub_min = 6, msub_max = 10, sigma_sub = 0.025, cone_angle_arcsec = 6.0, host_halo_scale_factor = 0.88,
-                redshift_scale_factor = 1.7, seed = 1234, randomization =  False):
+                redshift_scale_factor = 1.7, seed = 1234, randomization =  True, spatial = "uniform", correlated_clustering = True, 
+                LOS_normalization = 1.0, fix_mass_range_sh = False, sh_beta = 4, sh_tt_th = 1.1, sh_dz = 0.01, sh_N_herm = 20, 
+                sh_zmax = 10., sh_N_ma = 500, center_x = 0, center_y = 0, einasto_alpha = 0.678, einasto_r2 = 199, sigmalogc = 0.128, 
+                gdecom_P = 8, ngaussian = 15, formation_mass_fraction = 0.5, precomputed_host = None, mass_trunc_adjust = True):
         constants_and_conversion.__init__(self)
+
+        # Base parameters for Insert_Halo
         self.zlens = zlens
         self.zsource = zsource
         self.DM_type = DM_type
@@ -76,7 +83,38 @@ class global_parameters(constants_and_conversion):
         self.randomization = randomization
         self.seed = seed
 
-        
+        # Spatial distribution settings:
+        self.spatial = spatial
+        self.spatial_ph = 'UNIFORM'
+        self.correlated_clustering = correlated_clustering
+        self.center_x = center_x
+        self.center_y = center_y
+        self.einasto_alpha = einasto_alpha
+        self.einasto_r2 = einasto_r2
+
+        #pyHalo settings:
+        self.LOS_normalization = LOS_normalization
+
+        #Sashimi settings:
+        self.fix_mass_range_sh = fix_mass_range_sh
+        self.sh_beta = sh_beta
+        self.sh_tt_th = sh_tt_th
+        self.sh_dz = sh_dz
+        self.sh_N_herm = sh_N_herm
+        self.sh_zmax = sh_zmax
+        self.sh_N_ma = sh_N_ma
+        self.sigmalogc = sigmalogc
+
+        #SIDM Gaussian decomposition settings:
+        self.gdecom_P = gdecom_P
+        self.ngaussian = ngaussian
+
+        #Formation time settings:
+        self.formation_mass_fraction = formation_mass_fraction
+
+        #Subhalo truncation and mass adjustment settings:
+        self.mass_trunc_adjust = mass_trunc_adjust
+
 
 class program_status:
     def __init__(self, current_status = "initializing"):
@@ -100,12 +138,19 @@ class program_status:
 class Insert_halo_base(global_parameters):
     def __init__(self, zlens = 0.5, zsource = 2.0, DM_type = "CDM", sigma_0 = 20, vel_scale = 25, Mhost = 13, geometry_shape = "DOUBLE_CONE",
                 shmfplindex = -1.9, msub_min = 6, msub_max = 10, sigma_sub = 0.025, cone_angle_arcsec = 6.0, host_halo_scale_factor = 0.88,
-                redshift_scale_factor = 1.7, seed = 1234, randomization = False):
+                redshift_scale_factor = 1.7, seed = 1234, randomization = True, spatial = "uniform", correlated_clustering = True, 
+                LOS_normalization = 1.0, fix_mass_range_sh = False, sh_beta = 4, sh_tt_th = 1.1, sh_dz = 0.01, sh_N_herm = 20, 
+                sh_zmax = 10., sh_N_ma = 500, center_x = 0, center_y = 0, einasto_alpha = 0.678, einasto_r2 = 199, sigmalogc = 0.128, 
+                gdecom_P = 8, ngaussian = 15, formation_mass_fraction = 0.5, precomputed_host = None, mass_trunc_adjust = True):
         global_parameters.__init__(self, zlens = zlens, zsource = zsource, DM_type = DM_type, sigma_0 = sigma_0,
                           vel_scale = vel_scale, Mhost = Mhost, geometry_shape = geometry_shape, shmfplindex = shmfplindex, 
                           msub_min = msub_min, msub_max = msub_max, sigma_sub = sigma_sub, cone_angle_arcsec = cone_angle_arcsec, 
                           host_halo_scale_factor = host_halo_scale_factor, redshift_scale_factor = redshift_scale_factor, seed = seed,
-                          randomization = randomization)
+                          randomization = randomization, spatial = spatial, correlated_clustering = correlated_clustering,
+                          LOS_normalization = LOS_normalization, fix_mass_range_sh = fix_mass_range_sh, sh_beta = sh_beta, sh_tt_th = sh_tt_th, 
+                          sh_dz = sh_dz, sh_N_herm = sh_N_herm, sh_zmax = sh_zmax, sh_N_ma = sh_N_ma, center_x = center_x, center_y = center_y,
+                          einasto_alpha = einasto_alpha, einasto_r2 = einasto_r2, sigmalogc = sigmalogc, gdecom_P = gdecom_P, ngaussian = ngaussian,
+                          formation_mass_fraction = formation_mass_fraction, precomputed_host = precomputed_host, mass_trunc_adjust = mass_trunc_adjust)
         self.global_status = program_status()
         self.global_status.set_status("idle")
 

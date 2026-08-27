@@ -1,43 +1,36 @@
 import numpy as np
+from scipy.integrate import simpson
+from scipy.interpolate import make_interp_spline
+
+
+#def subhalo_mass_function(M_halo, z, m, sigma_sub, k1 = 0.88, k2 = 1.7, m0 = 1e8, alpha = -1.9):
+#    """
+#    Returns d^2N_sub/dm/dA as shown in https://arxiv.org/pdf/1908.06983, good plots to recreate: https://arxiv.org/pdf/1908.06983
+#    """
+#    log10F = k1 * np.log10(M_halo / 1e13) + k2 * np.log(z + 0.5)
+#    return sigma_sub/m0 * (m / m0) ** alpha * 10 ** log10F
 
 
 
+#def host_halo_scale(Mhalo, z, k1 = 0.88, k2 = 1.7):
+#    """
+#    Computes the host halo scaling factor F (https://arxiv.org/pdf/1908.06983) where k1 is the host scaling factor and k2 the redshift scaling factor
+#    """
+#    return 10**(k1 * np.log10(Mhalo / 1e13) + k2 * np.log10(z + 0.5))
 
-
-
-def subhalo_mass_function(M_halo, z, m, sigma_sub, k1 = 0.88, k2 = 1.7, m0 = 1e8, alpha = -1.9):
-    """
-    Returns d^2N_sub/dm/dA as shown in https://arxiv.org/pdf/1908.06983, good plots to recreate: https://arxiv.org/pdf/1908.06983
-    """
-
-    log10F = k1 * np.log10(M_halo / 1e13) + k2 * np.log(z + 0.5)
-    return sigma_sub/m0 * (m / m0) ** alpha * 10 ** log10F
-
-
-
-def host_halo_scale(Mhalo, z, k1 = 0.88, k2 = 1.7):
-    """
-    Computes the host halo scaling factor F (https://arxiv.org/pdf/1908.06983) where k1 is the host scaling factor and k2 the redshift scaling factor
-    """
-    return 10**(k1 * np.log10(Mhalo / 1e13) + k2 * np.log10(z + 0.5))
-
-def integrated_subhalo_mass_function(Mhalo, msub_min, msub_max, z, m, sigma_sub, k1 = 0.88, k2 = 1.7, m0 = 1e8, alpha = -1.9):
-    """
-    Returns N_sub / A from an integrated subhalo mass function as seen in https://arxiv.org/pdf/1908.06983. The returned value is the number of expected
-    subhalos between the a mass of msub_min and msub_max at a redshift z. The A in the returned quantity is the area of the lens plane that we are considering.
-
-    The area of the lens plane has to be evaluated externally from this function, but this has to be computed at the same redshift value as is given here.
-    """
-    int_factor = alpha + 1
-
-    cfactor = sigma_sub * host_halo_scale(Mhalo, z, k1, k2) / (m0 ** int_factor)
-
-    if int_factor != 0:
-        integral = 1 / int_factor * (msub_max ** int_factor - msub_min ** int_factor)
-    else:
-        integral = np.log(msub_max / msub_min)
-
-    return cfactor * integral
+#def integrated_subhalo_mass_function(Mhalo, msub_min, msub_max, z, m, sigma_sub, k1 = 0.88, k2 = 1.7, m0 = 1e8, alpha = -1.9):
+#    """
+#    Returns N_sub / A from an integrated subhalo mass function as seen in https://arxiv.org/pdf/1908.06983. The returned value is the number of expected
+#    subhalos between the a mass of msub_min and msub_max at a redshift z. The A in the returned quantity is the area of the lens plane that we are considering.
+#    The area of the lens plane has to be evaluated externally from this function, but this has to be computed at the same redshift value as is given here.
+#    """
+#    int_factor = alpha + 1
+#    cfactor = sigma_sub * host_halo_scale(Mhalo, z, k1, k2) / (m0 ** int_factor)
+#    if int_factor != 0:
+#        integral = 1 / int_factor * (msub_max ** int_factor - msub_min ** int_factor)
+#    else:
+#        integral = np.log(msub_max / msub_min)
+#    return cfactor * integral
 
 
 class geometry_and_massfunction():
@@ -67,6 +60,31 @@ class geometry_and_massfunction():
         Mhalo = self.IHB.Mhost
         msub_min = 10 ** self.IHB.msub_min # IHB.msub_min is in log10 so to get the actual mass we raise 10 to the power of IHB.msub_min
         msub_max = 10 ** self.IHB.msub_max # Same as for msub_mmin
+
+
+        int_factor = alpha + 1
+    
+        cfactor = sigma_sub * self.host_halo_scale() / (m0 ** int_factor)
+    
+        if int_factor != 0:
+            integral = 1 / int_factor * (msub_max ** int_factor - msub_min ** int_factor)
+        else:
+            integral = np.log(msub_max / msub_min)
+    
+        return cfactor * integral  
+
+    def integrated_subhalo_mass_function_massbins(self, m_min, m_max, m0 = 1e8):
+        """
+        Returns N_sub / A from an integrated subhalo mass function as seen in https://arxiv.org/pdf/1908.06983. The returned value is the number of expected
+        subhalos between the a mass of msub_min and msub_max at a redshift z. The A in the returned quantity is the area of the lens plane that we are considering. The units of the returned value is [kpc^-2]
+    
+        The area of the lens plane has to be evaluated externally from this function, but this has to be computed at the same redshift value as is given here.
+        """
+        alpha = self.IHB.shmfplindex
+        sigma_sub = self.IHB.sigma_sub
+        Mhalo = self.IHB.Mhost
+        msub_min = 10 ** m_min # IHB.msub_min is in log10 so to get the actual mass we raise 10 to the power of IHB.msub_min
+        msub_max = 10 ** m_max # Same as for msub_mmin
 
 
         int_factor = alpha + 1
@@ -116,13 +134,73 @@ class geometry_and_massfunction():
 
 
 
+    def kpc_per_arcsec(self, z = None, N = 1000):
+        """
+        Computes the number of kpc in one arcsec for a flat CDM cosmology
+        """
+    
+        if z == None:
+            z = self.IHB.zlens
 
+        z_array = np.linspace(0, z, N)
+        d_integrand = self.H0_H(z_array)
+        d_integral = simpson(d_integrand, x = z_array)
 
+        H0 = self.cosmology.H0
+        c = self.IHB.c / self.IHB.km * self.IHB.s
 
+        arcsec1 = 1 * self.IHB.arcsec
+        rad1 = arcsec1 / self.IHB.rad
 
+        D = rad1 * c / H0 * d_integral / (1 + z) * self.IHB.Mpc
+        return D
 
+    def kpc_per_arcsec_interp(self, N = 1000, Nz_interpolation = 100):
+        """
+        Computes the number of kpc in one arcsec for a flat CDM cosmology for a set of redshifts and returns the interpolation function.
+        """
+        z = self.IHB.zsource
+        zN_array = np.linspace(0, z, Nz_interpolation)
+        z_array = np.linspace(0, zN_array, N)
+        #print(z_array)
+        d_integrand = self.H0_H(z_array)
+        d_integral = simpson(d_integrand, x = z_array, axis = 0)
+    
+        H0 = self.cosmology.H0
+        c = self.IHB.c / self.IHB.km * self.IHB.s
+    
+        arcsec1 = 1 * self.IHB.arcsec
+        rad1 = arcsec1 / self.IHB.rad
+    
+        D = rad1 * c / H0 * d_integral / (1 + zN_array) * self.IHB.Mpc
+    
+        kpc_per_arcsec_interp = make_interp_spline(zN_array, D)
+        return kpc_per_arcsec_interp
 
+    def angular_diameter_distance(self, z_close, z_far, N = 1000, divide_one_z = True):
+        """
+        Computes the angular diameter distance (in kpc) between redshifts z_close and z_far, this is for example used
+        to compute the Einstein radius
+        """
+        z_array = np.linspace(z_close, z_far, N)
+        d_integrand = self.H0_H(z_array)
+        d_integral = simpson(d_integrand, x = z_array)
+        H0 = self.cosmology.H0
+        c = self.IHB.c / self.IHB.km * self.IHB.s
+        if divide_one_z:
+            D = c / H0 * d_integral / (1 + z_far) * self.IHB.Mpc
+        elif not divide_one_z:
+            D = c / H0 * d_integral * self.IHB.Mpc
+        return D
 
+    
+    def H0_H(self, z):
+        """
+        Returns 1 / (H(z) / H0)
+        """
+        OmegaM = self.cosmology.OmegaM
+        OmegaL = 1 - OmegaM 
+        return 1 / np.sqrt(OmegaM * (1 + z)**3 + OmegaL)
 
 
 
