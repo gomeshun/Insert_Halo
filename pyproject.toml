@@ -9,16 +9,17 @@ description = "Insert SASHIMI dark-matter subhalos into pyHalo realizations for 
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "numpy==2.5.1",
+    "numpy==2.4.6",
     "matplotlib==3.11.1",
     "scipy==1.17.1",
     "numexpr==2.14.2",
+    "numba==0.66.0",
     "tqdm==4.70.0",
     "astropy==8.0.1",
     "colossus==1.4.0",
     "lenstronomy==1.14.2",
     "mcfit==0.0.22",
-    "pyHalo==1.4.9",
+    "pyHalo==1.4.6",
 ]
 
 [tool.setuptools]
