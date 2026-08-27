@@ -53,6 +53,10 @@ insert_halo = Insert_Halo()
 
 The main workflow is exposed through `Insert_Halo.run_insert_halo`. See its docstring and `IH_testing.ipynb` for the code-level interface while the project documentation is being expanded.
 
+## Optional WGD2038 support
+
+`WGD2038_setup_class.py` additionally depends on the project-specific `samana` package. This dependency is not part of the base Insert_Halo environment and is not required to import or use `IH_main`. Provide the matching `samana` installation separately before using the WGD2038 helper.
+
 ## Main external projects
 
 - [SASHIMI-SIDM](https://github.com/shinichiroando/sashimi-si)
