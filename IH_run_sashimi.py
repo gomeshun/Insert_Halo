@@ -3,7 +3,7 @@ import sys
 file_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, file_path)
 from Insert_halo_base import *
-from sashimi_si import *
+from sashimi_si_IH import *
 from IH_errors import *
 
 class SH_control_storage(Insert_halo_base):
@@ -87,9 +87,9 @@ class SH_control_storage(Insert_halo_base):
 
         #Setting global status:
         self.IHB.global_status.set_status(f"Initializing Sashimi-{self.IHB.DM_type}")
-        print(self.IHB.global_status.status())
+        #print(self.IHB.global_status.status())
 
-        sh = subhalo_properties(sigma0_m = self.IHB.sigma_0, w = self.IHB.vel_scale, beta = 4, tt_th = 1.1)
+        sh = subhalo_properties(sigma0_m = self.IHB.sigma_0, w = self.IHB.vel_scale, beta = self.IHB.sh_beta, tt_th = self.IHB.sh_tt_th)
         self.sh_settings = sh
         self.IHB.global_status.set_status("idle")
         
@@ -119,40 +119,53 @@ class SH_control_storage(Insert_halo_base):
 
         #Setting global status:
         self.IHB.global_status.set_status(f"Running Sashimi-{self.IHB.DM_type}")
-        print(self.IHB.global_status.status())
+        #print(self.IHB.global_status.status())
 
 
-        sh = subhalo_properties(sigma0_m = self.IHB.sigma_0, w = self.IHB.vel_scale, beta = 4, tt_th = 1.1)
+        sh = subhalo_properties(sigma0_m = self.IHB.sigma_0, w = self.IHB.vel_scale, beta = self.IHB.sh_beta, tt_th = self.IHB.sh_tt_th)
+
         
-        ma200, z_acc, rsCDM_acc, rhosCDM_acc, rmaxCDM_acc, VmaxCDM_acc, rsSIDM_acc, rhosSIDM_acc, rcSIDM_acc, rmaxSIDM_acc, VmaxSIDM_acc, m_z0, rsCDM_z0,   rhosCDM_z0, rmaxCDM_z0, VmaxCDM_z0, rsSIDM_z0, rhosSIDM_z0, rcSIDM_z0, rmaxSIDM_z0, VmaxSIDM_z0, ctCDM_z0, tt_ratio, weightCDM, weightSIDM, surviveCDM, surviveSIDM = sh.subhalo_properties_calc(M0 = 10 ** self.IHB.Mhost, redshift = self.IHB.zlens, M0_at_redshift = True, dz = 0.01, N_herm = 20, zmax = 5.,                            logmamin = self.IHB.msub_min, logmamax = self.IHB.msub_max, N_ma = 500)
+        # M0_at_redshift should always be set to true since zlens cannot be equal to 0
+        ma200, z_acc, rsCDM_acc, rhosCDM_acc, rmaxCDM_acc, VmaxCDM_acc, rsSIDM_acc, rhosSIDM_acc, rcSIDM_acc, rmaxSIDM_acc, VmaxSIDM_acc, m_z0, rsCDM_z0,   rhosCDM_z0, rmaxCDM_z0, VmaxCDM_z0, rsSIDM_z0, rhosSIDM_z0, rcSIDM_z0, rmaxSIDM_z0, VmaxSIDM_z0, ctCDM_z0, tt_ratio, weightCDM, weightSIDM, surviveCDM, surviveSIDM = sh.subhalo_properties_calc(M0 = 10 ** self.IHB.Mhost, redshift = self.IHB.zlens, M0_at_redshift = True, dz = self.IHB.sh_dz, N_herm = self.IHB.sh_N_herm, 
+zmax = self.IHB.sh_zmax, logmamin = self.IHB.msub_min, logmamax = self.IHB.msub_max, N_ma = self.IHB.sh_N_ma, sigmalogc = self.IHB.sigmalogc)
 
-        self.ma200 = ma200
-        self.z_acc = z_acc
-        self.rsCDM_acc = rsCDM_acc
-        self.rhosCDM_acc = rhosCDM_acc
-        self.rmaxCDM_acc = rmaxCDM_acc
-        self.VmaxCDM_acc = VmaxCDM_acc
-        self.rsSIDM_acc = rsSIDM_acc
-        self.rhosSIDM_acc = rhosSIDM_acc
-        self.rcSIDM_acc = rcSIDM_acc
-        self.rmaxSIDM_acc = rmaxSIDM_acc
-        self.VmaxSIDM_acc = VmaxSIDM_acc
-        self.m_z0 = m_z0
-        self.rsCDM_z0 = rsCDM_z0
-        self.rhosCDM_z0 = rhosCDM_z0
-        self.rmaxCDM_z0 = rmaxCDM_z0
-        self.VmaxCDM_z0 = VmaxCDM_z0
-        self.rsSIDM_z0 = rsSIDM_z0
-        self.rhosSIDM_z0 = rhosSIDM_z0
-        self.rcSIDM_z0 = rcSIDM_z0
-        self.rmaxSIDM_z0 = rmaxSIDM_z0
-        self.VmaxSIDM_z0 = VmaxSIDM_z0
-        self.ctCDM_z0 = ctCDM_z0
-        self.tt_ratio = tt_ratio
-        self.weightCDM = weightCDM
-        self.weightSIDM = weightSIDM
-        self.surviveCDM = surviveCDM
-        self.surviveSIDM = surviveSIDM
+
+        
+        if self.IHB.fix_mass_range_sh:
+            indices = (ma200 > 10**self.IHB.msub_min) * (ma200 < 10**self.IHB.msub_max)
+        else:
+            indices = (m_z0 > 0)
+
+    
+
+        
+        self.ma200 = ma200[indices]
+        self.z_acc = z_acc[indices]
+        self.rsCDM_acc = rsCDM_acc[indices]
+        self.rhosCDM_acc = rhosCDM_acc[indices]
+        self.rmaxCDM_acc = rmaxCDM_acc[indices]
+        self.VmaxCDM_acc = VmaxCDM_acc[indices]
+        self.rsSIDM_acc = rsSIDM_acc[indices]
+        self.rhosSIDM_acc = rhosSIDM_acc[indices]
+        self.rcSIDM_acc = rcSIDM_acc[indices]
+        self.rmaxSIDM_acc = rmaxSIDM_acc[indices]
+        self.VmaxSIDM_acc = VmaxSIDM_acc[indices]
+        self.m_z0 = m_z0[indices]
+        self.rsCDM_z0 = rsCDM_z0[indices]
+        self.rhosCDM_z0 = rhosCDM_z0[indices]
+        self.rmaxCDM_z0 = rmaxCDM_z0[indices]
+        self.VmaxCDM_z0 = VmaxCDM_z0[indices]
+        self.rsSIDM_z0 = rsSIDM_z0[indices]
+        self.rhosSIDM_z0 = rhosSIDM_z0[indices]
+        self.rcSIDM_z0 = rcSIDM_z0[indices]
+        self.rmaxSIDM_z0 = rmaxSIDM_z0[indices]
+        self.VmaxSIDM_z0 = VmaxSIDM_z0[indices]
+        self.ctCDM_z0 = ctCDM_z0[indices]
+        self.tt_ratio = tt_ratio[indices]
+        self.weightCDM = weightCDM[indices]
+        self.weightSIDM = weightSIDM[indices]
+        self.surviveCDM = surviveCDM[indices]
+        self.surviveSIDM = surviveSIDM[indices]
 
         self.sh_settings = sh
 
@@ -203,7 +216,19 @@ class SH_control_storage(Insert_halo_base):
         self.S_surviveCDM = self.surviveCDM[indices]
         self.S_surviveSIDM = self.surviveSIDM[indices]
 
-
+"""
+For CDM:
+        ma200:    Mass m_{200} at accretion.
+        z_acc:    Redshift at accretion.
+        rs_acc:   Scale radius r_s at accretion.
+        rhos_acc: Characteristic density \rho_s at accretion.
+        m_z0:     Mass up to tidal truncation radius at a given redshift.
+        rs_z0:    Scale radius r_s at a given redshift.
+        rhos_z0:  Characteristic density \rho_s at a given redshift.
+        ct_z0:    Tidal truncation radius in units of r_s at a given redshift.
+        weight:   Effective number of subhalos that are characterized by the same set of the parameters above.
+        survive:  If that subhalo survive against tidal disruption or not.
+"""
 
 
 

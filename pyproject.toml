@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "insert-halo"
+version = "1.0.0"
+description = "Insert SASHIMI dark-matter subhalos into pyHalo realizations for gravitational-lensing analyses."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy==2.5.1",
+    "matplotlib==3.11.1",
+    "scipy==1.18.0",
+    "numexpr==2.14.2",
+    "tqdm==4.70.0",
+    "astropy==8.0.1",
+    "colossus==1.4.0",
+    "lenstronomy==1.14.2",
+    "mcfit==0.0.22",
+    "pyHalo==1.4.9",
+]
+
+[tool.setuptools]
+py-modules = [
+    "Geometry_and_mass_function",
+    "IH_ABC_strong_lensing",
+    "IH_SIDM",
+    "IH_alternative_DM_dist",
+    "IH_cosmology",
+    "IH_data_analysis",
+    "IH_errors",
+    "IH_grav_lensing",
+    "IH_halo_conversion",
+    "IH_host_halo",
+    "IH_main",
+    "IH_run_pyhalo",
+    "IH_run_sashimi",
+    "IH_spatial_calc",
+    "Insert_halo_base",
+    "WGD2038_setup_class",
+    "sashimi_si_IH",
+]
