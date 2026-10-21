@@ -1,0 +1,33 @@
+{
+  "baseline_commit": "8810e408cb2edfb621ebfbda7aa68d60a4284045",
+  "uv_lock_sha256": "2f7275e74f2850c8c5012c280f2efa246fdfab13099d33522384bee292e98dc8",
+  "research_files_sha256": {
+    "Insert_Halo_v1.00/Geometry_and_mass_function.py": "a63f85ab96633d4d7c029a3fe740bd48ef97243e56eb98b1605eb332185287f8",
+    "Insert_Halo_v1.00/IH_ABC_strong_lensing.py": "4c728590936fbc25b270526baf8e8d402c5504a37f39dd4711c9867154f4948c",
+    "Insert_Halo_v1.00/IH_SIDM.py": "098286cea72eb8e27e67eaca2d356d434ecb422bf0d912c28744aa3a39b39307",
+    "Insert_Halo_v1.00/IH_alternative_DM_dist.py": "b004203b5f9878e3f3a188e9f0c8a0c14bdc915fe71b54fa52f34b524691d015",
+    "Insert_Halo_v1.00/IH_cosmology.py": "851598304965c8e7da67ffe7950f69213ef54f12d99bead8a945a25699316b70",
+    "Insert_Halo_v1.00/IH_data_analysis.py": "cc494abe03f8174204542d6427c61cf9836654a5138f22de8be2d51229cec123",
+    "Insert_Halo_v1.00/IH_errors.py": "588d8ee84ce5cc684c90a183671844d544c98731eda14f3158409663865c3b6d",
+    "Insert_Halo_v1.00/IH_grav_lensing.py": "5f48e0c943bc7ce2be16228eb3471ea14afb48027d2ca5b0f667446ae2621b3e",
+    "Insert_Halo_v1.00/IH_halo_conversion.py": "5a32ac14cc03cbf94a5bfe80739da4133540d3d188f0747f7798bb8abcaa8f79",
+    "Insert_Halo_v1.00/IH_host_halo.py": "0ef66d8dc9cbbc89c423662d09f2f54a61054a8f6fcc19948311568eb9b979b8",
+    "Insert_Halo_v1.00/IH_main.py": "787935de6d958acbf1cec3f7688412c7ce5b94e31ad5d32d12d54573ac098571",
+    "Insert_Halo_v1.00/IH_run_pyhalo.py": "3827ca00ef4e6312b3205b1271f0ce836e1b49658ce999ba2d293310c8e61667",
+    "Insert_Halo_v1.00/IH_run_sashimi.py": "b03631b0249cb1bf6f06bfb8bd04f1334a5695ee98b431b3a6a941b2bbf5e54e",
+    "Insert_Halo_v1.00/IH_spatial_calc.py": "d1b956e69bf4959d7c841e25a730fbb91135d76cda51a17bcb4a8fe2c9defc8d",
+    "Insert_Halo_v1.00/Insert_halo_base.py": "5bd0da453f8dedc899f462e5cf1e9f156d03a2dfbdfb3ead9632170ecec668da",
+    "Insert_Halo_v1.00/WGD2038_setup_class.py": "a321d77522e0a5221b575c704838e832f01820f0b55daca03b4f13f900605906",
+    "Insert_Halo_v1.00/sashimi_si_IH.py": "dcee9e4b6a3ab0442b686764244de385fb847d901186d269c43fb7f2b525313a",
+    "Insert_Halo_v1.00/IH_testing.ipynb": "f554aaa6ce1df6009f010beb3d5641dfbe7b87d8cc609e89e6dbe130a66d8150"
+  },
+  "original_driver_sha256": {
+    "fullrun_pso.py": "ce2cfc457d761caa7e512fada718419ba6bd30d5ca847e6306c9b29209351ab8",
+    "fullrun_abc.py": "ebfe7562ef21ebc34ab30c99ab90064066b4782988228f4365d7d5dc44d1fcd0",
+    "fullrun_maps.py": "4d6ad6ab7809fb3e38b858c64cf31be118cf049eb7c58787e174293e744db782",
+    "fullrun_independent_maps.py": "8ed3fdb2e7ed0d7c01d49f863853a7cdcec110c015f6440c91091065c1c931a0",
+    "fullrun_diagnostics.py": "61ed29a79831bb62efe8d246d49635ec672f5609d731add4bcae8650a08d3be1",
+    "fullrun_baseline_controls.py": "ab5208feb28522d03bfe5e750d6a9c50ddee5af87e45484867e049d608a8ba0d",
+    "fullrun_analysis.py": "801297b4731d44e7336f835fa37b072826734cdb5f9121631cf0588d50ae05c8"
+  }
+}

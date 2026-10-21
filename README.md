@@ -64,6 +64,10 @@ On a 4-CPU Cloud environment, expect roughly 3–4 minutes for the verification,
 excluding dependency installation. Reports, fits, and research results are not
 committed.
 
+The thesis-scale run (200 ABC realizations, six 300×300 convergence maps, and
+supplementary diagnostics) is documented in
+[`scripts/full_run/README.md`](scripts/full_run/README.md).
+
 `.github/workflows/uv-integration.yml` runs the same locked installation,
 dependency check, and integration test on every push and pull request. It can
 also be started manually. The workflow uses Ubuntu 24.04, uv 0.12.23, a fresh

@@ -31,5 +31,7 @@ jobs:
         run: uv sync --locked
       - name: Check dependency compatibility
         run: uv pip check
+      - name: Check full-run command-line guards
+        run: uv run --locked pytest -m "not integration"
       - name: Run original PSO and reduced SIDM ABC integration test
         run: uv run --locked pytest -m integration --durations=1
