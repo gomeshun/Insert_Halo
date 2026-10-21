@@ -1,0 +1,35 @@
+name: uv integration
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uv-integration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pso-and-abc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.12.23"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install the pinned Python interpreter
+        run: uv python install
+      - name: Build the locked environment
+        run: uv sync --locked
+      - name: Check dependency compatibility
+        run: uv pip check
+      - name: Run original PSO and reduced SIDM ABC integration test
+        run: uv run --locked pytest -m integration --durations=1

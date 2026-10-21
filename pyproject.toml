@@ -1,0 +1,79 @@
+[project]
+name = "insert-halo-research"
+version = "1.0.0"
+description = "Validated runtime for the Insert_Halo_v1.00 research scripts"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "astropy==7.2.3",
+    "colossus==1.4.0",
+    "lenstronomy==1.13.2",
+    "mcfit==0.0.22",
+    "numba==0.61.2",
+    "numexpr==2.14.2",
+    "numpy==1.26.4",
+    "pyhalo==1.4.6",
+    "samana==0.2.0",
+    "scipy==1.13.1",
+    "tqdm==4.70.1",
+]
+
+[dependency-groups]
+dev = ["pytest==8.4.2", "setuptools==84.0.0", "wheel==0.48.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+    "integration: original WGD2038 PSO plus five reduced SIDM ABC trials (several minutes)",
+]
+
+[tool.uv]
+package = false
+required-version = ">=0.12.23,<0.13"
+# Preserve the transitive versions from the verified runtime. uv.lock also records
+# artifact hashes and the complete resolved dependency graph.
+constraint-dependencies = [
+    "astropy-iers-data==0.2026.10.19.0.52.1",
+    "click==8.4.2",
+    "configparser==7.2.0",
+    "contourpy==1.3.3",
+    "corner==2.3.0",
+    "cycler==0.12.1",
+    "dill==0.4.1",
+    "fonttools==4.61.1",
+    "h5py==3.16.0",
+    "imageio==2.38.1",
+    "joblib==1.5.3",
+    "kiwisolver==1.4.9",
+    "lazy-loader==0.6",
+    "llvmlite==0.44.0",
+    "matplotlib==3.10.8",
+    "mpmath==1.3.0",
+    "multiprocess==0.70.19",
+    "networkx==3.7",
+    "packaging==26.3",
+    "pillow==12.3.0",
+    "pyerfa==2.0.1.5",
+    "pyparsing==3.3.2",
+    "python-dateutil==2.9.0.post0",
+    "pyxdg==0.28",
+    "pyyaml==6.0.3",
+    "schwimmbad==0.4.2",
+    "scikit-image==0.26.0",
+    "scikit-learn==1.8.0",
+    "six==1.17.0",
+    "threadpoolctl==3.6.0",
+    "tifffile==2026.3.3",
+]
+build-constraint-dependencies = [
+    # pyHalo's own build-system requires this setuptools release. Build in
+    # isolation; keep the validated runtime tooling in the dev group above.
+    "setuptools==68.2.2",
+    "wheel==0.45.1",
+    "packaging==26.3",
+]
+
+[tool.uv.sources]
+pyhalo = { git = "https://github.com/dangilman/pyHalo.git", rev = "91a5d39aa6b23f4a71d670f32cb21b12a29b7c9a" }
+samana = { git = "https://github.com/dangilman/samana.git", rev = "723e009de9d7544f33e78f40a3978f09f57787ae" }
